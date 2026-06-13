@@ -1,4 +1,4 @@
-import { CraneReading } from '../lib/supabase';
+import { CraneReading } from '../lib/api';
 import { Activity, Clock, ArrowUpDown, MoveHorizontal } from 'lucide-react';
 
 interface StatusCardProps {

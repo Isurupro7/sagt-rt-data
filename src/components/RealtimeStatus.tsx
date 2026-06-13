@@ -1,88 +1,68 @@
-import { useEffect, useState, useRef } from 'react';
-import { supabase, CraneReading } from '../lib/supabase';
+import { useEffect, useState, useRef, useCallback } from 'react';
+import { CraneReading, fetchLatestReadings } from '../lib/api';
 import { StatusCard } from './StatusCard';
 import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
 
+const POLL_INTERVAL = 10000; // 10 seconds
+
 export function RealtimeStatus() {
-  const [latestReadings, setLatestReadings] = useState<Map<string, CraneReading>>(new Map());
+  const [latestReadings, setLatestReadings] = useState<CraneReading[]>([]);
   const [connected, setConnected] = useState(false);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [newIds, setNewIds] = useState<Set<string>>(new Set());
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const prevReadingsRef = useRef<Map<string, string>>(new Map());
 
-  // Load latest readings per crane
-  const loadLatestReadings = async () => {
-    const { data, error } = await supabase
-      .from('crane_readings')
-      .select('*')
-      .order('timestamp', { ascending: false });
+  const loadLatestReadings = useCallback(async () => {
+    try {
+      const { data, lastUpdate: lu } = await fetchLatestReadings();
+      setConnected(true);
 
-    if (error) {
-      console.error('Error loading readings:', error);
-      return;
-    }
-
-    if (data) {
-      const map = new Map<string, CraneReading>();
+      // Detect which cranes got new data
+      const newHighlights = new Set<string>();
       for (const reading of data) {
-        if (!map.has(reading.crane_id)) {
-          map.set(reading.crane_id, reading);
+        const prevTimestamp = prevReadingsRef.current.get(reading.crane_id);
+        if (prevTimestamp && prevTimestamp !== reading.timestamp) {
+          newHighlights.add(reading.crane_id);
         }
       }
-      setLatestReadings(map);
-      if (data.length > 0) {
-        setLastUpdate(new Date(data[0].timestamp));
-      }
-    }
-  };
 
-  // Subscribe to realtime changes
+      // Update prev timestamps
+      const newPrev = new Map<string, string>();
+      for (const reading of data) {
+        newPrev.set(reading.crane_id, reading.timestamp);
+      }
+      prevReadingsRef.current = newPrev;
+
+      setLatestReadings(data);
+
+      if (lu) {
+        setLastUpdate(new Date(lu));
+      }
+
+      if (newHighlights.size > 0) {
+        setNewIds(newHighlights);
+        setTimeout(() => setNewIds(new Set()), 3000);
+      }
+    } catch (error) {
+      console.error('Error loading readings:', error);
+      setConnected(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadLatestReadings();
 
-    const channel = supabase
-      .channel('crane-readings-realtime')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'crane_readings',
-        },
-        (payload) => {
-          const newReading = payload.new as CraneReading;
-          setLatestReadings((prev) => {
-            const updated = new Map(prev);
-            updated.set(newReading.crane_id, newReading);
-            return updated;
-          });
-          setLastUpdate(new Date(newReading.timestamp));
-
-          // Highlight new update
-          setNewIds((prev) => new Set(prev).add(newReading.crane_id));
-          setTimeout(() => {
-            setNewIds((prev) => {
-              const updated = new Set(prev);
-              updated.delete(newReading.crane_id);
-              return updated;
-            });
-          }, 3000);
-        }
-      )
-      .subscribe((status) => {
-        setConnected(status === 'SUBSCRIBED');
-      });
-
-    channelRef.current = channel;
+    intervalRef.current = setInterval(loadLatestReadings, POLL_INTERVAL);
 
     return () => {
-      if (channelRef.current) {
-        supabase.removeChannel(channelRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
       }
     };
-  }, []);
+  }, [loadLatestReadings]);
 
-  const sortedReadings = Array.from(latestReadings.values()).sort((a, b) =>
+  const sortedReadings = latestReadings.sort((a, b) =>
     a.crane_id.localeCompare(b.crane_id, undefined, { numeric: true })
   );
 
@@ -94,8 +74,9 @@ export function RealtimeStatus() {
           {connected ? (
             <span className="flex items-center text-green-600">
               <Wifi className="w-5 h-5 mr-2" />
-              <span className="text-sm font-medium">Real-time Connected</span>
+              <span className="text-sm font-medium">Connected</span>
               <span className="ml-2 w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              <span className="ml-2 text-xs text-gray-400">polling every 10s</span>
             </span>
           ) : (
             <span className="flex items-center text-red-600">
@@ -114,7 +95,7 @@ export function RealtimeStatus() {
           <button
             onClick={loadLatestReadings}
             className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-            title="Refresh"
+            title="Refresh now"
           >
             <RefreshCw className="w-4 h-4" />
           </button>

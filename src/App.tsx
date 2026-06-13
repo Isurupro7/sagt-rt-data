@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { RefreshCw, Database, LayoutGrid, Table } from 'lucide-react';
-import { supabase, CraneReading } from './lib/supabase';
+import { CraneReading, fetchCraneReadings, triggerFetchCraneData } from './lib/api';
 import { CraneDataTable } from './components/CraneDataTable';
 import { RealtimeStatus } from './components/RealtimeStatus';
 
@@ -13,13 +13,8 @@ function App() {
 
   const loadReadings = async () => {
     try {
-      const { data, error } = await supabase
-        .from('crane_readings')
-        .select('*')
-        .order('timestamp', { ascending: false });
-
-      if (error) throw error;
-      setReadings(data || []);
+      const data = await fetchCraneReadings();
+      setReadings(data);
     } catch (error) {
       console.error('Error loading readings:', error);
       setMessage('Error loading readings');
@@ -33,23 +28,13 @@ function App() {
     setMessage('Fetching crane data from API...');
 
     try {
-      const apiUrl = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/fetch-crane-data`;
-      const headers = {
-        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
-        'Content-Type': 'application/json',
-      };
-
-      const response = await fetch(apiUrl, {
-        method: 'POST',
-        headers
-      });
-      const result = await response.json();
+      const result = await triggerFetchCraneData();
 
       if (result.success) {
         setMessage(`Successfully fetched data for ${result.processed} cranes!`);
         await loadReadings();
       } else {
-        setMessage(`Error: ${result.error}`);
+        setMessage(`Error fetching data`);
       }
     } catch (error) {
       console.error('Error fetching data:', error);

@@ -1,4 +1,4 @@
-import { CraneReading } from '../lib/supabase';
+import { CraneReading } from '../lib/api';
 
 interface CraneDataTableProps {
   readings: CraneReading[];
