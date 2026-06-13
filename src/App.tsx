@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
-import { RefreshCw, Database } from 'lucide-react';
+import { RefreshCw, Database, LayoutGrid, Table } from 'lucide-react';
 import { supabase, CraneReading } from './lib/supabase';
 import { CraneDataTable } from './components/CraneDataTable';
+import { RealtimeStatus } from './components/RealtimeStatus';
 
 function App() {
   const [readings, setReadings] = useState<CraneReading[]>([]);
   const [loading, setLoading] = useState(true);
   const [fetching, setFetching] = useState(false);
   const [message, setMessage] = useState('');
+  const [activeTab, setActiveTab] = useState<'status' | 'table'>('status');
 
   const loadReadings = async () => {
     try {
@@ -65,7 +67,8 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
+        {/* Header */}
+        <div className="mb-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <Database className="w-8 h-8 text-blue-600" />
@@ -91,7 +94,38 @@ function App() {
           )}
         </div>
 
-        <CraneDataTable readings={readings} loading={loading} />
+        {/* Tab Navigation */}
+        <div className="flex space-x-1 bg-white rounded-lg shadow p-1 mb-6">
+          <button
+            onClick={() => setActiveTab('status')}
+            className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'status'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+            }`}
+          >
+            <LayoutGrid className="w-4 h-4 mr-2" />
+            Real-time Status
+          </button>
+          <button
+            onClick={() => setActiveTab('table')}
+            className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === 'table'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+            }`}
+          >
+            <Table className="w-4 h-4 mr-2" />
+            Data Table
+          </button>
+        </div>
+
+        {/* Content */}
+        {activeTab === 'status' ? (
+          <RealtimeStatus />
+        ) : (
+          <CraneDataTable readings={readings} loading={loading} />
+        )}
       </div>
     </div>
   );
