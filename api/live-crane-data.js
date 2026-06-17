@@ -30,7 +30,8 @@ export default async function handler(req, res) {
     res.setHeader('Connection', 'keep-alive');
     res.flushHeaders();
 
-    for (const id of HOIST_IDS) {
+    // Parallel fetch all, send as each resolves
+    const promises = HOIST_IDS.map(async (id) => {
       try {
         const response = await fetch(BASE_URL + id);
         const data = await response.json();
@@ -52,8 +53,9 @@ export default async function handler(req, res) {
       } catch {
         // Skip failed crane
       }
-    }
+    });
 
+    await Promise.all(promises);
     res.write('event: done\ndata: {}\n\n');
     res.end();
     return;
