@@ -14,6 +14,7 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -23,15 +24,46 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000);
+  // If ?stream=1, use Server-Sent Events
+  if (req.query.stream === '1') {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
 
+    for (const id of HOIST_IDS) {
+      try {
+        const response = await fetch(BASE_URL + id);
+        const data = await response.json();
+        const divisor = RT_IDS_REFURBISHED.includes(id) ? 60 : 1;
+
+        const craneData = {
+          crane_id: `RT ${id}`,
+          hoist_hours: data.hoist_hours / divisor,
+          trolley_hours: data.trolley_hours / divisor,
+          gantry_hours: data.gantry_hours / divisor,
+          control_on_state: data.control_on_state ?? false,
+          soc1: data.soc1 ?? 0,
+          soc2: data.soc2 ?? 0,
+          soc3: data.soc3 ?? 0,
+          engine_auto_mode: data.engine_auto_mode ?? false,
+        };
+
+        res.write(`data: ${JSON.stringify(craneData)}\n\n`);
+      } catch {
+        // Skip failed crane
+      }
+    }
+
+    res.write('event: done\ndata: {}\n\n');
+    res.end();
+    return;
+  }
+
+  // Normal batch fetch
+  try {
     const fetchPromises = HOIST_IDS.map(async (id) => {
       try {
-        const response = await fetch(BASE_URL + id, {
-          signal: controller.signal,
-        });
+        const response = await fetch(BASE_URL + id);
         const data = await response.json();
         const divisor = RT_IDS_REFURBISHED.includes(id) ? 60 : 1;
 
@@ -52,7 +84,6 @@ export default async function handler(req, res) {
     });
 
     const results = await Promise.all(fetchPromises);
-    clearTimeout(timeout);
     const validData = results.filter((item) => item !== null);
 
     return res.status(200).json({ success: true, data: validData });

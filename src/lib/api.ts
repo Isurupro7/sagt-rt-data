@@ -58,3 +58,33 @@ export async function fetchLiveCraneData(): Promise<CraneLiveData[]> {
   if (!json.success) throw new Error(json.error || 'Failed to fetch live data');
   return json.data;
 }
+
+export function streamLiveCraneData(
+  onCrane: (data: CraneLiveData) => void,
+  onDone: () => void,
+  onError: (error: Error) => void
+): () => void {
+  const eventSource = new EventSource(`${API_BASE}/api/live-crane-data?stream=1`);
+
+  eventSource.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data) as CraneLiveData;
+      onCrane(data);
+    } catch {
+      // skip parse errors
+    }
+  };
+
+  eventSource.addEventListener('done', () => {
+    eventSource.close();
+    onDone();
+  });
+
+  eventSource.onerror = () => {
+    eventSource.close();
+    onError(new Error('Stream connection failed'));
+  };
+
+  // Return cleanup function
+  return () => eventSource.close();
+}
