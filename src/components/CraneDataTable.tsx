@@ -8,16 +8,16 @@ interface CraneDataTableProps {
 export function CraneDataTable({ readings, loading }: CraneDataTableProps) {
   if (loading) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex justify-center items-center py-20">
+        <div className="animate-spin rounded-full h-8 w-8 border-2 border-slate-200 border-t-slate-600"></div>
       </div>
     );
   }
 
   if (readings.length === 0) {
     return (
-      <div className="text-center py-12 text-gray-500">
-        No crane readings available. Click "Fetch Latest Data" to get started.
+      <div className="text-center py-20 text-slate-400 text-sm">
+        No historical data available. Sync data to populate records.
       </div>
     );
   }
@@ -39,47 +39,47 @@ export function CraneDataTable({ readings, loading }: CraneDataTableProps) {
   const latestReadings = groupedByTimestamp[latestTimestamp] || [];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-          Latest Readings
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-sm font-semibold text-slate-800">Latest Readings</h2>
           {latestTimestamp && (
-            <span className="text-sm font-normal text-gray-600 ml-3">
+            <span className="text-xs text-slate-400">
               {new Date(latestTimestamp).toLocaleString()}
             </span>
           )}
-        </h2>
-        <div className="overflow-x-auto bg-white rounded-lg shadow">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Crane ID
+        </div>
+        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+          <table className="min-w-full">
+            <thead>
+              <tr className="border-b border-slate-100">
+                <th className="px-4 py-3 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  Crane
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Hoist Hours
+                <th className="px-4 py-3 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  Hoist (hrs)
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Trolley Hours
+                <th className="px-4 py-3 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  Trolley (hrs)
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Gantry Hours
+                <th className="px-4 py-3 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                  Gantry (hrs)
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {latestReadings.sort((a, b) => a.crane_id.localeCompare(b.crane_id)).map((reading) => (
-                <tr key={reading.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+            <tbody className="divide-y divide-slate-50">
+              {latestReadings.sort((a, b) => a.crane_id.localeCompare(b.crane_id, undefined, { numeric: true })).map((reading) => (
+                <tr key={reading.id} className="hover:bg-slate-50 transition-colors">
+                  <td className="px-4 py-3 text-sm font-medium text-slate-900">
                     {reading.crane_id}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  <td className="px-4 py-3 text-sm text-slate-600 text-right tabular-nums">
                     {reading.hoist_hours.toFixed(2)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  <td className="px-4 py-3 text-sm text-slate-600 text-right tabular-nums">
                     {reading.trolley_hours.toFixed(2)}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                  <td className="px-4 py-3 text-sm text-slate-600 text-right tabular-nums">
                     {reading.gantry_hours.toFixed(2)}
                   </td>
                 </tr>
@@ -91,44 +91,45 @@ export function CraneDataTable({ readings, loading }: CraneDataTableProps) {
 
       {timestamps.length > 1 && (
         <div>
-          <h2 className="text-2xl font-semibold mb-4 text-gray-800">Historical Readings</h2>
-          <div className="space-y-4">
+          <h2 className="text-sm font-semibold text-slate-800 mb-3">Previous Records</h2>
+          <div className="space-y-2">
             {timestamps.slice(1, 6).map((timestamp) => (
-              <details key={timestamp} className="bg-white rounded-lg shadow">
-                <summary className="px-6 py-4 cursor-pointer hover:bg-gray-50 font-medium text-gray-700">
-                  {new Date(timestamp).toLocaleString()} ({groupedByTimestamp[timestamp].length} readings)
+              <details key={timestamp} className="bg-white rounded-lg border border-slate-200 group">
+                <summary className="px-4 py-3 cursor-pointer hover:bg-slate-50 text-sm font-medium text-slate-700 flex items-center justify-between transition-colors">
+                  <span>{new Date(timestamp).toLocaleString()}</span>
+                  <span className="text-xs text-slate-400">{groupedByTimestamp[timestamp].length} readings</span>
                 </summary>
-                <div className="overflow-x-auto border-t border-gray-200">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Crane ID
+                <div className="border-t border-slate-100">
+                  <table className="min-w-full">
+                    <thead>
+                      <tr className="border-b border-slate-50">
+                        <th className="px-4 py-2.5 text-left text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                          Crane
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Hoist Hours
+                        <th className="px-4 py-2.5 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                          Hoist (hrs)
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Trolley Hours
+                        <th className="px-4 py-2.5 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                          Trolley (hrs)
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Gantry Hours
+                        <th className="px-4 py-2.5 text-right text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                          Gantry (hrs)
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {groupedByTimestamp[timestamp].sort((a, b) => a.crane_id.localeCompare(b.crane_id)).map((reading) => (
-                        <tr key={reading.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <tbody className="divide-y divide-slate-50">
+                      {groupedByTimestamp[timestamp].sort((a, b) => a.crane_id.localeCompare(b.crane_id, undefined, { numeric: true })).map((reading) => (
+                        <tr key={reading.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-4 py-2.5 text-sm font-medium text-slate-900">
                             {reading.crane_id}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          <td className="px-4 py-2.5 text-sm text-slate-600 text-right tabular-nums">
                             {reading.hoist_hours.toFixed(2)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          <td className="px-4 py-2.5 text-sm text-slate-600 text-right tabular-nums">
                             {reading.trolley_hours.toFixed(2)}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          <td className="px-4 py-2.5 text-sm text-slate-600 text-right tabular-nums">
                             {reading.gantry_hours.toFixed(2)}
                           </td>
                         </tr>

@@ -1,9 +1,9 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { CraneLiveData, fetchLiveCraneData } from '../lib/api';
 import { StatusCard } from './StatusCard';
-import { Wifi, WifiOff, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 
-const POLL_INTERVAL = 10000; // 10 seconds
+const POLL_INTERVAL = 10000;
 
 export function RealtimeStatus() {
   const [liveData, setLiveData] = useState<CraneLiveData[]>([]);
@@ -20,7 +20,6 @@ export function RealtimeStatus() {
       setConnected(true);
       setLoading(false);
 
-      // Detect which cranes got new data (hoist hours changed)
       const newHighlights = new Set<string>();
       for (const reading of data) {
         const prevHoist = prevDataRef.current.get(reading.crane_id);
@@ -29,7 +28,6 @@ export function RealtimeStatus() {
         }
       }
 
-      // Update prev data
       const newPrev = new Map<string, number>();
       for (const reading of data) {
         newPrev.set(reading.crane_id, reading.hoist_hours);
@@ -52,13 +50,9 @@ export function RealtimeStatus() {
 
   useEffect(() => {
     loadLiveData();
-
     intervalRef.current = setInterval(loadLiveData, POLL_INTERVAL);
-
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, [loadLiveData]);
 
@@ -69,68 +63,58 @@ export function RealtimeStatus() {
   const onlineCount = sortedData.filter(d => d.control_on_state).length;
 
   return (
-    <div className="space-y-6">
-      {/* Connection Status Bar */}
-      <div className="flex items-center justify-between bg-white rounded-xl shadow-md px-5 py-3">
-        <div className="flex items-center space-x-3">
-          {connected ? (
-            <span className="flex items-center text-green-600">
-              <Wifi className="w-5 h-5 mr-2" />
-              <span className="text-sm font-medium">Connected</span>
-              <span className="ml-2 w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              <span className="ml-2 text-xs text-gray-400">polling every 10s</span>
+    <div className="space-y-5">
+      {/* Status Bar */}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <span className={`w-2 h-2 rounded-full ${connected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+            <span className="text-sm text-slate-600">
+              {connected ? 'Connected' : 'Disconnected'}
             </span>
-          ) : (
-            <span className="flex items-center text-red-600">
-              <WifiOff className="w-5 h-5 mr-2" />
-              <span className="text-sm font-medium">Disconnected</span>
-            </span>
-          )}
+          </div>
+          <div className="h-4 w-px bg-slate-200" />
+          <span className="text-sm text-slate-600">
+            <span className="font-medium text-slate-800">{sortedData.length}</span> cranes
+          </span>
+          <div className="h-4 w-px bg-slate-200" />
+          <span className="text-sm text-slate-600">
+            <span className="font-medium text-emerald-600">{onlineCount}</span> online
+          </span>
+          <div className="h-4 w-px bg-slate-200" />
+          <span className="text-sm text-slate-600">
+            <span className="font-medium text-slate-400">{sortedData.length - onlineCount}</span> offline
+          </span>
         </div>
 
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center gap-3">
           {lastUpdate && (
-            <span className="text-xs text-gray-500">
-              Last update: {lastUpdate.toLocaleTimeString()}
+            <span className="text-xs text-slate-400">
+              Updated {lastUpdate.toLocaleTimeString()}
             </span>
           )}
           <button
             onClick={loadLiveData}
-            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-            title="Refresh now"
+            className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded transition-colors"
+            title="Refresh"
           >
-            <RefreshCw className="w-4 h-4" />
+            <RefreshCw className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
-      {/* Stats Bar */}
-      <div className="flex items-center gap-4 text-sm">
-        <span className="text-gray-600">
-          Monitoring <span className="font-semibold text-blue-600">{sortedData.length}</span> cranes
-        </span>
-        <span className="text-gray-400">|</span>
-        <span className="text-gray-600">
-          <span className="font-semibold text-green-600">{onlineCount}</span> online
-        </span>
-        <span className="text-gray-400">|</span>
-        <span className="text-gray-600">
-          <span className="font-semibold text-gray-500">{sortedData.length - onlineCount}</span> offline
-        </span>
-      </div>
-
-      {/* Status Grid */}
+      {/* Grid */}
       {loading ? (
-        <div className="text-center py-12">
-          <RefreshCw className="w-8 h-8 text-blue-500 animate-spin mx-auto mb-3" />
-          <p className="text-gray-500">Loading crane data...</p>
+        <div className="flex items-center justify-center py-20">
+          <RefreshCw className="w-5 h-5 text-slate-400 animate-spin" />
+          <span className="ml-2 text-sm text-slate-500">Loading crane data...</span>
         </div>
       ) : sortedData.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          No crane data available. Check API connection.
+        <div className="text-center py-20 text-slate-400 text-sm">
+          No crane data available
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
           {sortedData.map((reading) => (
             <StatusCard
               key={reading.crane_id}

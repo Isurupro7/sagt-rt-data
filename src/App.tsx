@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { RefreshCw, Database, LayoutGrid, Table } from 'lucide-react';
+import { RefreshCw, LayoutGrid, Table, Activity } from 'lucide-react';
 import { CraneReading, fetchCraneReadings, triggerFetchCraneData } from './lib/api';
 import { CraneDataTable } from './components/CraneDataTable';
 import { RealtimeStatus } from './components/RealtimeStatus';
@@ -31,7 +31,7 @@ function App() {
       const result = await triggerFetchCraneData();
 
       if (result.success) {
-        setMessage(`Successfully fetched data for ${result.processed} cranes!`);
+        setMessage(`Successfully fetched data for ${result.processed} cranes`);
         await loadReadings();
       } else {
         setMessage(`Error fetching data`);
@@ -50,58 +50,67 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-6">
+    <div className="min-h-screen bg-slate-50">
+      {/* Top Navigation Bar */}
+      <header className="bg-slate-900 border-b border-slate-800">
+        <div className="max-w-[1600px] mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <Database className="w-8 h-8 text-blue-600" />
-              <h1 className="text-3xl font-bold text-gray-900">Crane Data Monitor</h1>
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-slate-700 rounded-lg flex items-center justify-center">
+                <Activity className="w-5 h-5 text-slate-200" />
+              </div>
+              <div>
+                <h1 className="text-lg font-semibold text-white tracking-tight">SAGT Crane Monitor</h1>
+                <p className="text-xs text-slate-400">Real-time Equipment Tracking System</p>
+              </div>
             </div>
             <button
               onClick={fetchNewData}
               disabled={fetching}
-              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-lg text-slate-200 bg-slate-700 hover:bg-slate-600 border border-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              <RefreshCw className={`w-5 h-5 mr-2 ${fetching ? 'animate-spin' : ''}`} />
-              {fetching ? 'Fetching...' : 'Fetch Latest Data'}
+              <RefreshCw className={`w-4 h-4 mr-2 ${fetching ? 'animate-spin' : ''}`} />
+              {fetching ? 'Syncing...' : 'Sync Data'}
             </button>
           </div>
-          {message && (
-            <div className={`mt-4 px-4 py-3 rounded-lg ${
-              message.includes('Error') || message.includes('Failed')
-                ? 'bg-red-50 text-red-800 border border-red-200'
-                : 'bg-green-50 text-green-800 border border-green-200'
-            }`}>
-              {message}
-            </div>
-          )}
         </div>
+      </header>
+
+      <div className="max-w-[1600px] mx-auto px-6 py-6">
+        {/* Alert Message */}
+        {message && (
+          <div className={`mb-4 px-4 py-3 rounded-lg text-sm ${
+            message.includes('Error') || message.includes('Failed')
+              ? 'bg-red-50 text-red-700 border border-red-100'
+              : 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+          }`}>
+            {message}
+          </div>
+        )}
 
         {/* Tab Navigation */}
-        <div className="flex space-x-1 bg-white rounded-lg shadow p-1 mb-6">
+        <div className="flex items-center gap-1 border-b border-slate-200 mb-6">
           <button
             onClick={() => setActiveTab('status')}
-            className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'status'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                ? 'border-slate-900 text-slate-900'
+                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
             }`}
           >
-            <LayoutGrid className="w-4 h-4 mr-2" />
-            Real-time Status
+            <LayoutGrid className="w-4 h-4" />
+            Live Status
           </button>
           <button
             onClick={() => setActiveTab('table')}
-            className={`flex items-center px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+            className={`flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'table'
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                ? 'border-slate-900 text-slate-900'
+                : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
             }`}
           >
-            <Table className="w-4 h-4 mr-2" />
-            Data Table
+            <Table className="w-4 h-4" />
+            Historical Data
           </button>
         </div>
 

@@ -3,56 +3,56 @@ interface CraneIconProps {
   isActive?: boolean;
 }
 
-export function CraneIcon({ className = 'w-12 h-12', isActive = false }: CraneIconProps) {
+export function CraneIcon({ className = 'w-8 h-8', isActive = false }: CraneIconProps) {
+  const primary = isActive ? '#1e293b' : '#94a3b8';
+  const secondary = isActive ? '#334155' : '#cbd5e1';
+
   return (
     <svg
       viewBox="0 0 512 512"
       className={className}
-      fill={isActive ? '#1e40af' : '#6b7280'}
       xmlns="http://www.w3.org/2000/svg"
     >
       {/* Main frame - top beam */}
-      <rect x="100" y="80" width="312" height="20" rx="4" />
+      <rect x="100" y="80" width="312" height="18" rx="3" fill={primary} />
       {/* Top cabin */}
-      <rect x="220" y="50" width="72" height="35" rx="4" />
-      <rect x="230" y="55" width="20" height="20" rx="2" fill={isActive ? '#3b82f6' : '#9ca3af'} />
-      <rect x="260" y="55" width="20" height="20" rx="2" fill={isActive ? '#3b82f6' : '#9ca3af'} />
+      <rect x="225" y="52" width="62" height="30" rx="3" fill={primary} />
+      <rect x="232" y="58" width="16" height="16" rx="2" fill={secondary} />
+      <rect x="254" y="58" width="16" height="16" rx="2" fill={secondary} />
       {/* Left leg */}
-      <rect x="108" y="80" width="20" height="300" rx="3" />
-      <rect x="135" y="80" width="20" height="300" rx="3" />
+      <rect x="110" y="80" width="16" height="290" rx="2" fill={primary} />
+      <rect x="134" y="80" width="16" height="290" rx="2" fill={primary} />
       {/* Right leg */}
-      <rect x="357" y="80" width="20" height="300" rx="3" />
-      <rect x="384" y="80" width="20" height="300" rx="3" />
-      {/* Cross beams left */}
-      <rect x="100" y="180" width="65" height="12" rx="2" />
-      <rect x="100" y="280" width="65" height="12" rx="2" />
-      {/* Cross beams right */}
-      <rect x="350" y="180" width="65" height="12" rx="2" />
-      <rect x="350" y="280" width="65" height="12" rx="2" />
-      {/* Trolley beam (horizontal) */}
-      <rect x="155" y="110" width="200" height="14" rx="3" />
+      <rect x="362" y="80" width="16" height="290" rx="2" fill={primary} />
+      <rect x="386" y="80" width="16" height="290" rx="2" fill={primary} />
+      {/* Cross beams */}
+      <rect x="102" y="185" width="56" height="10" rx="2" fill={secondary} />
+      <rect x="102" y="275" width="56" height="10" rx="2" fill={secondary} />
+      <rect x="354" y="185" width="56" height="10" rx="2" fill={secondary} />
+      <rect x="354" y="275" width="56" height="10" rx="2" fill={secondary} />
+      {/* Trolley beam */}
+      <rect x="158" y="108" width="196" height="12" rx="2" fill={secondary} />
       {/* Trolley */}
-      <rect x="230" y="100" width="50" height="30" rx="4" fill={isActive ? '#2563eb' : '#6b7280'} />
+      <rect x="234" y="100" width="44" height="26" rx="3" fill={primary} />
       {/* Hoist cables */}
-      <rect x="245" y="130" width="3" height="80" />
-      <rect x="262" y="130" width="3" height="80" />
+      <rect x="248" y="126" width="2.5" height="75" fill={primary} />
+      <rect x="261" y="126" width="2.5" height="75" fill={primary} />
       {/* Spreader */}
-      <rect x="225" y="208" width="60" height="12" rx="2" fill={isActive ? '#1d4ed8' : '#4b5563'} />
-      {/* Container outline */}
-      <rect x="215" y="222" width="80" height="55" rx="3" fill="none" stroke={isActive ? '#1e40af' : '#6b7280'} strokeWidth="4" />
-      {/* Left wheels */}
-      <circle cx="118" cy="395" r="16" />
-      <circle cx="145" cy="395" r="16" />
-      <circle cx="118" cy="395" r="6" fill="white" />
-      <circle cx="145" cy="395" r="6" fill="white" />
-      {/* Right wheels */}
-      <circle cx="367" cy="395" r="16" />
-      <circle cx="394" cy="395" r="16" />
-      <circle cx="367" cy="395" r="6" fill="white" />
-      <circle cx="394" cy="395" r="6" fill="white" />
-      {/* Wheel axles */}
-      <rect x="100" y="380" width="65" height="8" rx="4" />
-      <rect x="350" y="380" width="65" height="8" rx="4" />
+      <rect x="230" y="200" width="52" height="10" rx="2" fill={primary} />
+      {/* Container */}
+      <rect x="222" y="212" width="68" height="48" rx="2" fill="none" stroke={primary} strokeWidth="3.5" />
+      {/* Wheels */}
+      <circle cx="118" cy="384" r="14" fill={primary} />
+      <circle cx="142" cy="384" r="14" fill={primary} />
+      <circle cx="370" cy="384" r="14" fill={primary} />
+      <circle cx="394" cy="384" r="14" fill={primary} />
+      <circle cx="118" cy="384" r="5" fill="white" />
+      <circle cx="142" cy="384" r="5" fill="white" />
+      <circle cx="370" cy="384" r="5" fill="white" />
+      <circle cx="394" cy="384" r="5" fill="white" />
+      {/* Wheel base */}
+      <rect x="102" y="372" width="56" height="6" rx="3" fill={primary} />
+      <rect x="354" y="372" width="56" height="6" rx="3" fill={primary} />
     </svg>
   );
 }
