@@ -6,22 +6,9 @@ interface StatusCardProps {
   isNew?: boolean;
 }
 
-function BatteryBar({ level, label }: { level: number; label: string }) {
-  const color = level > 60 ? 'bg-emerald-500' : level > 30 ? 'bg-amber-500' : 'bg-red-500';
-
-  return (
-    <div className="flex items-center gap-2">
-      <span className="text-[11px] text-slate-500 w-7">{label}</span>
-      <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-        <div className={`h-full ${color} rounded-full transition-all`} style={{ width: `${level}%` }} />
-      </div>
-      <span className="text-[11px] font-medium text-slate-600 w-8 text-right">{level}%</span>
-    </div>
-  );
-}
-
 export function StatusCard({ reading, isNew }: StatusCardProps) {
   const isOnline = reading.control_on_state;
+  const avgSoc = Math.round((reading.soc1 + reading.soc2 + reading.soc3) / 3);
 
   return (
     <div
@@ -68,11 +55,19 @@ export function StatusCard({ reading, isNew }: StatusCardProps) {
         </div>
 
         {/* Battery Section */}
-        <div className="space-y-1.5">
-          <p className="text-[10px] uppercase tracking-wider text-slate-400 font-medium mb-2">Super Capacitor</p>
-          <BatteryBar level={reading.soc1} label="SC1" />
-          <BatteryBar level={reading.soc2} label="SC2" />
-          <BatteryBar level={reading.soc3} label="SC3" />
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <p className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Super Capacitor</p>
+            <span className={`text-xs font-semibold ${avgSoc > 60 ? 'text-emerald-600' : avgSoc > 30 ? 'text-amber-600' : 'text-red-600'}`}>
+              {avgSoc}%
+            </span>
+          </div>
+          <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${avgSoc > 60 ? 'bg-emerald-500' : avgSoc > 30 ? 'bg-amber-500' : 'bg-red-500'}`}
+              style={{ width: `${avgSoc}%` }}
+            />
+          </div>
         </div>
       </div>
     </div>

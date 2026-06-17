@@ -24,9 +24,14 @@ export default async function handler(req, res) {
   }
 
   try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+
     const fetchPromises = HOIST_IDS.map(async (id) => {
       try {
-        const response = await fetch(BASE_URL + id);
+        const response = await fetch(BASE_URL + id, {
+          signal: controller.signal,
+        });
         const data = await response.json();
         const divisor = RT_IDS_REFURBISHED.includes(id) ? 60 : 1;
 
@@ -47,6 +52,7 @@ export default async function handler(req, res) {
     });
 
     const results = await Promise.all(fetchPromises);
+    clearTimeout(timeout);
     const validData = results.filter((item) => item !== null);
 
     return res.status(200).json({ success: true, data: validData });

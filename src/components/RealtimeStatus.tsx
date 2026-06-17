@@ -105,9 +105,26 @@ export function RealtimeStatus() {
 
       {/* Grid */}
       {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <RefreshCw className="w-5 h-5 text-slate-400 animate-spin" />
-          <span className="ml-2 text-sm text-slate-500">Loading crane data...</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3">
+          {Array.from({ length: 12 }).map((_, i) => (
+            <div key={i} className="bg-white rounded-lg border border-slate-200 p-4 animate-pulse">
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="w-8 h-8 bg-slate-200 rounded" />
+                <div>
+                  <div className="w-14 h-4 bg-slate-200 rounded" />
+                  <div className="w-10 h-3 bg-slate-100 rounded mt-1.5" />
+                </div>
+              </div>
+              <div className="grid grid-cols-3 gap-px bg-slate-100 rounded-lg overflow-hidden mb-4">
+                <div className="bg-white p-2.5"><div className="w-full h-8 bg-slate-100 rounded" /></div>
+                <div className="bg-white p-2.5"><div className="w-full h-8 bg-slate-100 rounded" /></div>
+                <div className="bg-white p-2.5"><div className="w-full h-8 bg-slate-100 rounded" /></div>
+              </div>
+              <div className="space-y-2">
+                <div className="w-full h-1.5 bg-slate-100 rounded-full" />
+              </div>
+            </div>
+          ))}
         </div>
       ) : sortedData.length === 0 ? (
         <div className="text-center py-20 text-slate-400 text-sm">
